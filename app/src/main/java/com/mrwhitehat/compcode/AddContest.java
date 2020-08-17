@@ -54,7 +54,7 @@ public class AddContest extends AppCompatActivity {
         end_date_btn = (MaterialButton) findViewById(R.id.end_date_btn);
         add_contest = (MaterialButton) findViewById(R.id.add_contest);
 
-        reference = FirebaseDatabase.getInstance().getReference("Contests");
+        reference = FirebaseDatabase.getInstance().getReference("Contests-await");
 
         start_time_btn.setOnClickListener(new View.OnClickListener() {
             @Override

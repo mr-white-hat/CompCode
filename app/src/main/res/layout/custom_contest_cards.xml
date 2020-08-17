@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="17dp"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
     android:orientation="horizontal"
     app:cardBackgroundColor="#D3D2D2"
     app:cardCornerRadius="20dp"

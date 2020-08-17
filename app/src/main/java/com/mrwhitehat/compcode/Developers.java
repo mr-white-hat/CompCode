@@ -30,7 +30,7 @@ public class Developers extends AppCompatActivity {
 
     public void git_macha(View view) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("https://github.com/ASSASSIN-363"));
+        intent.setData(Uri.parse("https://github.com/SriRam-Macha"));
         startActivity(intent);
     }
 
@@ -42,7 +42,7 @@ public class Developers extends AppCompatActivity {
 
     public void web_macha(View view) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("https://assassin-363.github.io/"));
+        intent.setData(Uri.parse("https://SriRam-Macha.github.io/"));
         startActivity(intent);
     }
 

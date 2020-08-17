@@ -6,18 +6,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -25,16 +30,15 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -59,6 +63,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     List<Contests_api> long_contests = new ArrayList<>();
     List<Contests_api> long_ongoing = new ArrayList<>();
 
+    SharedPreferences preferences;
+    String WARN_ID = "0";
+    String Warn;
+
     int check_runner = 0;
     private RequestQueue result_queue;
     private static String JSON_URL = "https://coding-notify.herokuapp.com/";
@@ -67,6 +75,61 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        preferences = this.getSharedPreferences("Warn_D", Context.MODE_PRIVATE);
+
+        if (preferences != null) {
+            WARN_ID = preferences.getString("WARN_ID", "");
+        }
+
+        FirebaseDatabase.getInstance().getReference("Warn").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Warn_get warn_get = snapshot.getValue(Warn_get.class);
+                Warn = warn_get.getId();
+
+                if (Warn.equals("-8")) {
+
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString("WARN_ID", Warn);
+                    editor.apply();
+
+                    final SpannableString msg = new SpannableString(warn_get.getMessage()); // msg should have url to enable clicking
+                    Linkify.addLinks(msg, Linkify.ALL);
+
+                    AlertDialog d = new AlertDialog.Builder(MainActivity.this)
+                            .setTitle(warn_get.getTitle())
+                            .setMessage(msg)
+                            .setIcon(R.drawable.error)
+                            .setPositiveButton("Okay", null)
+                            .create();
+                            d.show();
+                    ((TextView)d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+                } else if (!WARN_ID.equals(Warn)) {
+
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString("WARN_ID", Warn);
+                    editor.apply();
+
+                    final SpannableString msg = new SpannableString(warn_get.getMessage()); // msg should have url to enable clicking
+                    Linkify.addLinks(msg, Linkify.ALL);
+
+                    AlertDialog d = new AlertDialog.Builder(MainActivity.this)
+                            .setTitle(warn_get.getTitle())
+                            .setMessage(msg)
+                            .setIcon(R.drawable.error)
+                            .setPositiveButton("Okay", null)
+                            .create();
+                    d.show();
+                    ((TextView)d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         pd = new ProgressDialog(this);
         pd.setMessage("Fetching live data...");
@@ -78,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
-        bottomNavigationView.setSelectedItemId(R.id.navigation_icon2);
+        bottomNavigationView.setSelectedItemId(R.id.navigation_icon1);
 
         result_queue = Volley.newRequestQueue(this);
 
@@ -114,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return true;
 
             case R.id.shareApp:
-                String text = "I'm using this Comp Code app and didn't miss even a single contest. You can also download this app.";
+                String text = "I'm using this Comp Code app and didn't miss even a single contest. You can also download this app from https://github.com/mr-white-hat/CompCode/raw/master/app/release/app-release.apk.";
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.putExtra(Intent.EXTRA_TEXT, text);
                 intent.setType("text/plain");
@@ -265,15 +328,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         switch (item.getItemId()) {
 
             case R.id.navigation_icon1:
-                bar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#77DD77")));
-                floating.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#77DD77")));
-                getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right).replace(R.id.container, contests_frag).commit();
-                return true;
-
-            case R.id.navigation_icon2:
                 bar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#FF6961")));
                 floating.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF6961")));
                 getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right).replace(R.id.container, profile_frag).commit();
+                return true;
+
+            case R.id.navigation_icon2:
+                bar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#77DD77")));
+                floating.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#77DD77")));
+                getSupportFragmentManager().beginTransaction().setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right).replace(R.id.container, contests_frag).commit();
                 return true;
 
             case R.id.navigation_icon3:
