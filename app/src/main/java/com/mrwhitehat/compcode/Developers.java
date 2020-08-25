@@ -35,9 +35,9 @@ public class Developers extends AppCompatActivity {
     }
 
     public void in_macha(View view) {
-//        Intent intent = new Intent(Intent.ACTION_VIEW);
-//        intent.setData(Uri.parse(""));
-//        startActivity(intent);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("https://www.linkedin.com/in/sriram-macha/"));
+        startActivity(intent);
     }
 
     public void web_macha(View view) {
